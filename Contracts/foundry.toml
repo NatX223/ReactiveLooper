@@ -1,0 +1,39 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+test = "test"
+
+remappings = [
+    "forge-std/=lib/forge-std/src/"
+]
+
+# Test configuration
+[profile.default.fuzz]
+runs = 256
+
+[profile.default.invariant]
+runs = 256
+depth = 15
+
+# Parameters for deployments
+[rpc_endpoints]
+sepoliaRPC = "${SEPOLIA_RPC_URL}"
+lasnaRPC = "${LASNA_RPC_URL}"
+[profile.private_key]
+privatekey = "${PRIVATE_KEY}"
+[profile.event_hashes]
+answerUpdated = "${ANSWER_UPDATED_EVENT}"
+feedRead = "${FEED_READ_EVENT}"
+[profile.service_addresses]
+sepoliaService = "${SEPOLIA_SERVICE_ADDRESS}"
+lasnaService = "${LASNA_SERVICE_ADDRESS}"
+[profile.chain_ids]
+sepoliaChainID = "${SEPOLIA_CHAIN_ID}"
+lasnaChainID = "${LASNA_CHAIN_ID}"
+
+# Etherscan API keys
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
