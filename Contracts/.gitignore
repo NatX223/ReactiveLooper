@@ -16,6 +16,9 @@ docs/
 #custom tests
 tests
 src/test
+
+# temporary ignores
 src/mocks
 src/callback/factory
 lib
+src/Swapper.sol
