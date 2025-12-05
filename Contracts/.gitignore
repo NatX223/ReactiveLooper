@@ -16,5 +16,6 @@ docs/
 #custom tests
 tests
 src/test
+src/mocks
 src/callback/factory
 lib
