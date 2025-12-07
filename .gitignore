@@ -1,1 +1,3 @@
 app
+Contracts/src/BorrowReactive.sol
+Contracts/src/SwapReactive.sol

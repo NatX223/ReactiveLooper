@@ -9,7 +9,7 @@ import "../lib/aave-v3-core/contracts/interfaces/IPool.sol";
 import "../lib/aave-v3-core/contracts/interfaces/IPriceOracle.sol";
 import "./ISwapper.sol";
 
-contract TokenSupplier is AbstractCallback, Ownable {
+contract Looper is AbstractCallback, Ownable {
     address public constant SERVICE = 0xc9f36411C9897e7F959D99ffca2a0Ba7ee0D7bDA;
 
     address public collateralToken;
