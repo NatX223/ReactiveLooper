@@ -15,13 +15,10 @@ contract BorrowReactive is IReactive, AbstractPausableReactive {
     uint256 private chainId = 11155111;
 
     /* Event topic hash used to filter and subscribe to borrow events from the poolAddress contract */
-    uint256 private eventTopic0 = 0xb3d084820fb1a9decffb176436bd02558d15fac9b0ddfed8c465bc7359d7dce0;
+    uint256 private eventTopic0 = 0x9fcd3c6877a958818e656e4fefcc08cf34ecafe4d4c8a9296f9bd5bfda3a4c5d;
 
     /* Address of the Looper contract that will receive callback notifications */
     address public looper;
-
-    /* Address of the Aave pool contract to monitor for supply events */
-    address public poolAddress;
 
     /*
      * Event emitted when the contract receives Ether payments
@@ -36,16 +33,14 @@ contract BorrowReactive is IReactive, AbstractPausableReactive {
     );
 
     constructor(
-        address _looper,
-        address _poolAddress
+        address _looper
     ) payable {
         looper = _looper;
-        poolAddress = _poolAddress;
         service = ISystemContract(payable(SERVICE));
         if (!vm) {
             service.subscribe(
                 chainId,
-                _poolAddress,
+                _looper,
                 eventTopic0,
                 REACTIVE_IGNORE,
                 REACTIVE_IGNORE,
@@ -78,13 +73,13 @@ contract BorrowReactive is IReactive, AbstractPausableReactive {
     }
 
     function react(LogRecord calldata log) external vmOnly {
-        address borrower = address(uint160(log.topic_2));
+        address borrower = address(uint160(log.topic_1));
 
         if (borrower == looper) {
             bytes memory payload = abi.encodeWithSignature(
                 "callback(address,uint8)",
                 address(0),
-                uint8(3)
+                uint8(2)
             );
 
             emit Callback(chainId, looper, GAS_LIMIT, payload);

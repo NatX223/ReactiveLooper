@@ -14,11 +14,15 @@ contract SwagReactive is IReactive, AbstractPausableReactive {
 
     uint256 private chainId = 11155111;
 
-    /* Event topic hash used to subscribe to borrow initiated event from the looper contract */
-    uint256 private eventTopic0 = 0x7bd7347ac0c5c5997893d5dbba17c64f9eb54fffcddbc735f0f7e7535203cb57;
+    /* Event topic hash used to filter and subscribe to transfer events from the collateral token contract */
+    uint256 private eventTopic0 = 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
 
     /* Address of the Looper contract that will receive callback notifications */
     address public looper;
+
+    address public collateralToken;
+
+    address public owner_;
 
     /*
      * Event emitted when the contract receives Ether payments
@@ -33,14 +37,18 @@ contract SwagReactive is IReactive, AbstractPausableReactive {
     );
 
     constructor(
-        address _looper
+        address _looper,
+        address _collateralToken,
+        address _owner
     ) payable {
         looper = _looper;
+        collateralToken = _collateralToken;
+        owner_ = _owner;
         service = ISystemContract(payable(SERVICE));
         if (!vm) {
             service.subscribe(
                 chainId,
-                _looper,
+                _collateralToken,
                 eventTopic0,
                 REACTIVE_IGNORE,
                 REACTIVE_IGNORE,
@@ -73,9 +81,11 @@ contract SwagReactive is IReactive, AbstractPausableReactive {
     }
 
     function react(LogRecord calldata log) external vmOnly {
-        address swapper = address(uint160(log.topic_1));
-
-        if (swapper == looper) {
+        address sender = address(uint160(log.topic_1));
+        address receiver = address(uint160(log.topic_2));
+        uint256 amount = abi.decode(log.data, (uint256));
+        
+        if (sender == owner_ && receiver == looper) {
             bytes memory payload = abi.encodeWithSignature(
                 "callback(address,uint8)",
                 address(0),

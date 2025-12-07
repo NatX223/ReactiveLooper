@@ -19,5 +19,6 @@ src/test
 
 # temporary ignores
 src/mocks
+src/script
 src/callback/factory
 lib

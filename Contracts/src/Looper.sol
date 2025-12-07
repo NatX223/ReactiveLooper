@@ -2,12 +2,13 @@
 pragma solidity ^0.8.7;
 
 import "../lib/reactive-lib/src/abstract-base/AbstractCallback.sol";
-import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
-import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../lib/aave-v3-core/contracts/interfaces/IPoolAddressesProvider.sol";
 import "../lib/aave-v3-core/contracts/interfaces/IPool.sol";
 import "../lib/aave-v3-core/contracts/interfaces/IPriceOracle.sol";
 import "./ISwapper.sol";
+import "./library/TransferHelper.sol";
 
 contract Looper is AbstractCallback, Ownable {
     address public constant SERVICE = 0xc9f36411C9897e7F959D99ffca2a0Ba7ee0D7bDA;
@@ -31,16 +32,11 @@ contract Looper is AbstractCallback, Ownable {
     uint8 private constant BORROW_TOKEN_DECIMALS = 6;
 
     enum operation {
-        approve,
         supply,
         borrow,
         swap
     }
 
-    event approvalInitiated(
-        address indexed approver,
-        address indexed collateralToken
-    );
     event supplyInitiated(
         address indexed supplier,
         address indexed collateralToken
@@ -109,14 +105,9 @@ contract Looper is AbstractCallback, Ownable {
         address sender,
         uint8 _operation
     ) external authorizedSenderOnly rvmIdOnly(sender) {
-        if (operation(_operation) == operation.approve) {
-            IERC20(collateralToken).approve(
-                address(Pool),
-                IERC20(collateralToken).balanceOf(address(this))
-            );
-            
-            emit approvalInitiated(address(this), collateralToken);
-        } else if (operation(_operation) == operation.supply) {
+        if (operation(_operation) == operation.supply) {            
+            TransferHelper.safeApprove(collateralToken, address(Pool), IERC20(collateralToken).balanceOf(address(this)));
+
             Pool.supply(
                 collateralToken,
                 IERC20(collateralToken).balanceOf(address(this)),

@@ -7,7 +7,8 @@ test = "test"
 remappings = [
     "forge-std/=lib/forge-std/src/",
     "@uniswap/v3-core/=lib/v3-core/",
-    "@uniswap/v3-periphery/=lib/v3-periphery/"
+    "@uniswap/v3-periphery/=lib/v3-periphery/",
+    "@openzeppelin/=lib/openzeppelin-contracts/"
 ]
 
 # Test configuration
@@ -22,6 +23,7 @@ depth = 15
 [rpc_endpoints]
 sepoliaRPC = "${SEPOLIA_RPC_URL}"
 lasnaRPC = "${LASNA_RPC_URL}"
+cronosRPC = "${CRONOS_RPC_URL}"
 [profile.private_key]
 privatekey = "${PRIVATE_KEY}"
 [profile.event_hashes]
