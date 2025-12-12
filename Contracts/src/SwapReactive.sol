@@ -5,7 +5,7 @@ import "../lib/reactive-lib/src/interfaces/ISystemContract.sol";
 import "../lib/reactive-lib/src/abstract-base/AbstractPausableReactive.sol";
 import "../lib/reactive-lib/src/interfaces/IReactive.sol";
 
-contract SwagReactive is IReactive, AbstractPausableReactive {
+contract SwapReactive is IReactive, AbstractPausableReactive {
     /* Maximum gas limit allocated for callback execution to prevent out-of-gas errors */
     uint64 private constant GAS_LIMIT = 1000000;
     
@@ -15,10 +15,12 @@ contract SwagReactive is IReactive, AbstractPausableReactive {
     uint256 private chainId = 11155111;
 
     /* Event topic hash used to subscribe to borrow initiated event from the looper contract */
-    uint256 private eventTopic0 = 0x7bd7347ac0c5c5997893d5dbba17c64f9eb54fffcddbc735f0f7e7535203cb57;
+    uint256 private eventTopic0 = 0x783bd8472ba2d01baf38569a5cdfaaa209e19da07cfaa1008df9cd1597910389;
 
     /* Address of the Looper contract that will receive callback notifications */
     address public looper;
+
+    address public swapper;
 
     /*
      * Event emitted when the contract receives Ether payments
@@ -33,14 +35,16 @@ contract SwagReactive is IReactive, AbstractPausableReactive {
     );
 
     constructor(
-        address _looper
+        address _looper,
+        address _swapper
     ) payable {
         looper = _looper;
+        swapper = _swapper;
         service = ISystemContract(payable(SERVICE));
         if (!vm) {
             service.subscribe(
                 chainId,
-                _looper,
+                _swapper,
                 eventTopic0,
                 REACTIVE_IGNORE,
                 REACTIVE_IGNORE,
@@ -73,13 +77,13 @@ contract SwagReactive is IReactive, AbstractPausableReactive {
     }
 
     function react(LogRecord calldata log) external vmOnly {
-        address swapper = address(uint160(log.topic_1));
+        address swapper_ = address(uint160(log.topic_2));
 
-        if (swapper == looper) {
+        if (swapper_ == looper) {
             bytes memory payload = abi.encodeWithSignature(
-                "callback(address,uint8)",
+                "callback(address,uint256)",
                 address(0),
-                uint8(0)
+                0
             );
 
             emit Callback(chainId, looper, GAS_LIMIT, payload);

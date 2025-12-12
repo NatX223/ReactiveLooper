@@ -3,7 +3,7 @@ pragma solidity ^0.7.0;
 pragma abicoder v2;
 
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
-import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
+import "./ISwapRouter.sol";
 import "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 
@@ -11,6 +11,8 @@ contract Swapper {
     ISwapRouter public constant swapRouter = ISwapRouter(0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E);
     address public constant factoryAdd = 0x0227628f3F023bb0B980b67D528571c95c6DaC1c;
     uint24 public constant poolFee = 3000;
+
+    event swapEvent(address indexed collateralToken, address indexed destination);
 
     constructor() {}
 
@@ -28,13 +30,14 @@ contract Swapper {
                 tokenOut: outToken,
                 fee: poolFee,
                 recipient: msg.sender,
-                deadline: block.timestamp + 10,
                 amountIn: amount,
                 amountOutMinimum: 0,
                 sqrtPriceLimitX96: 0
             });
 
         amountOut = swapRouter.exactInputSingle(params);
+
+        emit swapEvent(outToken, msg.sender);
     }
 
     function estimateAmountOut(

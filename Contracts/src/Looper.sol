@@ -22,7 +22,7 @@ contract Looper is AbstractCallback, Ownable {
 
     ISwapper public immutable Swapper;
 
-    uint256 private constant SAFETY_FACTOR_PERCENT = 9500;
+    uint256 private constant SAFETY_FACTOR_PERCENT = 3500;
     uint256 private constant DENOMINATOR = 10000;
 
     // Aave V3 Base Currency (e.g., USD) uses 8 decimals for pricing.
@@ -31,35 +31,13 @@ contract Looper is AbstractCallback, Ownable {
     // USDC uses 6 decimals.
     uint8 private constant BORROW_TOKEN_DECIMALS = 6;
 
-    enum operation {
-        supply,
-        borrow,
-        swap
-    }
-
-    event supplyInitiated(
-        address indexed supplier,
-        address indexed collateralToken
-    );
-    event borrowInitiated(
-        address indexed borrower,
-        address indexed collateralToken,
-        address indexed borrowToken
-    );
-    event swapInitiated(
-        address indexed swapper,
-        address indexed inToken,
-        address indexed outToken
-    );
-
     constructor(
-        address _owner,
         address _collateralToken,
         address _borrowToken,
         address _poolAddressProvider,
         address _priceOracle,
         address _swapper
-    ) payable AbstractCallback(SERVICE) Ownable(_owner) {
+    ) payable AbstractCallback(SERVICE) Ownable(msg.sender) {
         collateralToken = _collateralToken;
         borrowToken = _borrowToken;
 
@@ -103,10 +81,12 @@ contract Looper is AbstractCallback, Ownable {
 
     function callback(
         address sender,
-        uint8 _operation
+        uint256 operation
     ) external authorizedSenderOnly rvmIdOnly(sender) {
-        if (operation(_operation) == operation.supply) {            
-            TransferHelper.safeApprove(collateralToken, address(Pool), IERC20(collateralToken).balanceOf(address(this)));
+        if (operation == 0) {
+            uint256 balance = IERC20(collateralToken).balanceOf(address(this));
+            require(balance > 0, "Collateral balance is zero");
+            TransferHelper.safeApprove(collateralToken, address(Pool), balance);
 
             Pool.supply(
                 collateralToken,
@@ -114,22 +94,21 @@ contract Looper is AbstractCallback, Ownable {
                 address(this),
                 0
             );
-
-            emit supplyInitiated(address(this), collateralToken);
-        } else if (operation(_operation) == operation.borrow) {
+        }
+        
+        else if (operation == 1) {
             uint256 borrowAmount = calculateSafeBorrowAmount();
+            require(borrowAmount > 0, "Borrow amount is zero");
+
             Pool.borrow(borrowToken, borrowAmount, 2, 0, address(this));
+        } 
+        
+        else if (operation == 2) {
+            uint256 borrowTokenBalance = IERC20(borrowToken).balanceOf(address(this));
+            require(borrowTokenBalance > 0, "Borrow token balance is zero");
+            TransferHelper.safeApprove(borrowToken, address(Swapper), borrowTokenBalance);
 
-            emit borrowInitiated(address(this), collateralToken, borrowToken);
-        } else if (operation(_operation) == operation.swap) {
-            uint256 borrowTokenBalance = IERC20(borrowToken).balanceOf(
-                address(this)
-            );
-            if (borrowTokenBalance > 0) {
-                Swapper.swapAsset(borrowToken, collateralToken, borrowTokenBalance);
-
-                emit swapInitiated(address(this), borrowToken, collateralToken);
-            }
+            Swapper.swapAsset(borrowToken, collateralToken, borrowTokenBalance);
         }
     }
 }

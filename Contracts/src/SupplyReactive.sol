@@ -15,10 +15,12 @@ contract SupplyReactive is IReactive, AbstractPausableReactive {
     uint256 private chainId = 11155111;
 
     /* Event topic hash used to subscribe to the supply event from the looper contract */
-    uint256 private eventTopic0 = 0xff0d81bf92081c03fa23735d1bcf7c8f38f9ee76da702ed07337c7c3344b3fb4;
+    uint256 private eventTopic0 = 0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61;
 
     /* Address of the Looper contract that will receive callback notifications */
     address public looper;
+
+    address public pool;
 
     /*
      * Event emitted when the contract receives Ether payments
@@ -33,14 +35,16 @@ contract SupplyReactive is IReactive, AbstractPausableReactive {
     );
 
     constructor(
-        address _looper
+        address _looper,
+        address _pool
     ) payable {
         looper = _looper;
+        pool = _pool;
         service = ISystemContract(payable(SERVICE));
         if (!vm) {
             service.subscribe(
                 chainId,
-                _looper,
+                _pool,
                 eventTopic0,
                 REACTIVE_IGNORE,
                 REACTIVE_IGNORE,
@@ -73,13 +77,13 @@ contract SupplyReactive is IReactive, AbstractPausableReactive {
     }
 
     function react(LogRecord calldata log) external vmOnly {
-        address supplier = address(uint160(log.topic_1));
+        address supplier = address(uint160(log.topic_2));
 
         if (supplier == looper) {
             bytes memory payload = abi.encodeWithSignature(
-                "callback(address,uint8)",
+                "callback(address,uint256)",
                 address(0),
-                uint8(1)
+                1
             );
 
             emit Callback(chainId, looper, GAS_LIMIT, payload);
