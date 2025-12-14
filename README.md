@@ -40,38 +40,38 @@ back contract.
 
 Below is an Imgae depicting the architecture of the ReactiveAggregator project.
            
-┌────────────────────────┐        ┌──────────────────┐         ┌─────────────────┐
-│  WETH Transfer Event   │◄───────┤  TransferReactive│         │                 │
-│  (User Opt-in)         │        │  (Event Monitor) │         │                 │
-└────────────────────────┘        └──────────────────┘         │                 │
-         │                              │                      │                 │
-         │ Transfer                     │ Callback             │                 │
-         ▼                              ▼                      │                 │
-┌─────────────────┐            ┌──────────────────┐            │  ┌─────────────┐│
-│   Looper        │◄───────────┤ Supply Event     │───────────►│  │ Aave Pool   ││
-│ (Supply)        │            │ (SupplyReactive) │            │  │(Collateral) ││
-└─────────────────┘            └──────────────────┘            │  └─────────────┘│
-         │                              │                      └─────────────────┘
-         │ Supply Event                 │ Callback                      │
-         ▼                              ▼                               │
-┌─────────────────┐            ┌──────────────────┐                     │
-│   Looper        │◄───────────┤ Borrow Event     │                     │
-│ (Borrow)        │            │ (BorrowReactive) │                     │
-└─────────────────┘            └──────────────────┘                     │
-         │                              │                               │
-         │ Borrow Event                 │ Callback                      │
-         ▼                              ▼                               │
-┌─────────────────┐            ┌──────────────────┐                     │
-│   Swapper       │◄───────────┤ Swap Event       │                     │
-│ (USDC→WETH)     │            │ (SwapReactive)   │                     │
-└─────────────────┘            └──────────────────┘                     │
-         │                              │                               │
-         │ Swap Event                   │ Callback                      │
-         ▼                              ▼                               │
-┌─────────────────┐            ┌──────────────────┐                     │
-│   Looper        │◄───────────┤ Loop Back        │◄────────────────────┘
-│ (Re-supply)     │            │ (Callback)       │
-└─────────────────┘            └──────────────────┘
+           ┌────────────────────────┐        ┌──────────────────┐         ┌─────────────────┐
+           │  WETH Transfer Event   │◄───────┤  TransferReactive│         │                 │
+           │  (User Opt-in)         │        │  (Event Monitor) │         │                 │
+           └────────────────────────┘        └──────────────────┘         │                 │
+                    │                              │                      │                 │
+                    │ Transfer                     │ Callback             │                 │
+                    ▼                              ▼                      │                 │
+           ┌─────────────────┐            ┌──────────────────┐            │  ┌─────────────┐│
+           │   Looper        │◄───────────┤ Supply Event     │───────────►│  │ Aave Pool   ││
+           │ (Supply)        │            │ (SupplyReactive) │            │  │(Collateral) ││
+           └─────────────────┘            └──────────────────┘            │  └─────────────┘│
+                    │                              │                      └─────────────────┘
+                    │ Supply Event                 │ Callback                      │
+                    ▼                              ▼                               │
+           ┌─────────────────┐            ┌──────────────────┐                     │
+           │   Looper        │◄───────────┤ Borrow Event     │                     │
+           │ (Borrow)        │            │ (BorrowReactive) │                     │
+           └─────────────────┘            └──────────────────┘                     │
+                    │                              │                               │
+                    │ Borrow Event                 │ Callback                      │
+                    ▼                              ▼                               │
+           ┌─────────────────┐            ┌──────────────────┐                     │
+           │   Swapper       │◄───────────┤ Swap Event       │                     │
+           │ (USDC→WETH)     │            │ (SwapReactive)   │                     │
+           └─────────────────┘            └──────────────────┘                     │
+                    │                              │                               │
+                    │ Swap Event                   │ Callback                      │
+                    ▼                              ▼                               │
+           ┌─────────────────┐            ┌──────────────────┐                     │
+           │   Looper        │◄───────────┤ Loop Back        │◄────────────────────┘
+           │ (Re-supply)     │            │ (Callback)       │
+           └─────────────────┘            └──────────────────┘
 
 ### Program Flow
 
