@@ -539,6 +539,13 @@ sending WETH to looper contract
 cast send --rpc-url sepoliaRPC --private-key $PRIVATE_KEY 0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c "transfer(address,uint256)" looper_address amount
 ```
 
+Running dapp locally
+```bash
+cd app
+
+npm run dev
+```
+
 ## 🧪 Testing
 
 ### Run Tests
