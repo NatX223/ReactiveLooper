@@ -38,7 +38,7 @@ back contract.
 
 ### Architecture
 
-Below is an Imgae depicting the architecture of the ReactiveAggregator project.
+Below is an Imgae depicting the architecture of the ReactiveLooper project.
            
 ┌────────────────────────┐        ┌──────────────────┐         ┌─────────────────┐
 │  WETH Transfer Event   │◄───────┤  TransferReactive│         │                 │
@@ -450,8 +450,8 @@ Reacting
 
 ```bash
 # Clone the repository
-git clone https://github.com/NatX223/ReactiveAggregatorV3Interface
-cd ReactiveAggregatorV3Interface/Contracts
+git clone https://github.com/NatX223/ReactiveLooperV3Interface
+cd ReactiveLooperV3Interface/Contracts
 
 # Install dependencies
 forge install
@@ -592,18 +592,19 @@ We welcome contributions! Please follow these steps:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/NatX223/ReactiveAggregatorV3Interface?tab=GPL-3.0-1-ov-file#readme) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/NatX223/ReactiveLooper?tab=GPL-3.0-1-ov-file#readme) file for details.
 
 ## 🆘 Support
 
-- **Documentation**: [Project Wiki](https://github.com/NatX223/ReactiveAggregatorV3Interface/wiki)
-- **Issues**: [GitHub Issues](https://github.com/NatX223/ReactiveAggregatorV3Interface/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/NatX223/ReactiveAggregatorV3Interface/discussions)
+- **Documentation**: [Project Wiki](https://github.com/NatX223/ReactiveLooper/wiki)
+- **Issues**: [GitHub Issues](https://github.com/NatX223/ReactiveLooper/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/NatX223/ReactiveLooper/discussions)
 
 ## 🙏 Acknowledgments
 
 - [Reactive Network](https://reactive.network/) for cross-chain infrastructure
-- [Chainlink](https://chain.link/) for the AggregatorV3Interface standard
+- [Aave](https://aave.com/docs/aave-v3/smart-contracts/pool) for the lending protocol
+- [Uniswap](https://docs.uniswap.org/contracts/v3/overview) for the swapping protocol
 - [Foundry](https://book.getfoundry.sh/) for development tooling
 
 ---
