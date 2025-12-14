@@ -3,7 +3,7 @@ DeFi lending looper - leverage optimizer powered by Reactive network
 
 ---
 
-## Live Link - 
+<!-- ## Live Link -  -->
 
 ## Demo - https://www.loom.com/share/407ac34f351c4b08a5e7173f1ce75c8d
 
@@ -15,8 +15,9 @@ DeFi lending looper - leverage optimizer powered by Reactive network
 4. [How It Works](#how-it-works)
 5. [Transactions](#transactions)
 6. [Setup and Deployment](#setup-and-deployment)
-7. [Future Improvements](#future-improvements)
-8. [Acknowledgments](#acknowledgments)
+7. [Bounty Requirements](#bounty-requirements)
+8. [Future Improvements](#future-improvements)
+9. [Acknowledgments](#acknowledgments)
 
 ## Overview
 
@@ -81,6 +82,7 @@ The following steps describe the program flow
 
 The user transfers a set amount of the collateral token in our case WETH (chosen token), 
 The `TransferReactive` contract subscribes to `Transfer` events from Collateral token on Sepolia and reacts to it by calling the callback on the Looper contract for the `Supply` function to be called from the looper.
+
 Subscribing
 
 ```solidity
@@ -450,8 +452,8 @@ Reacting
 
 ```bash
 # Clone the repository
-git clone https://github.com/NatX223/ReactiveLooperV3Interface
-cd ReactiveLooperV3Interface/Contracts
+git clone https://github.com/NatX223/ReactiveLooperV3
+cd ReactiveLooperV3/Contracts
 
 # Install dependencies
 forge install
@@ -477,39 +479,64 @@ LASNA_SERVICE_ADDRESS=0x0000000000000000000000000000000000fffFfF
 LASNA_CHAIN_ID=5318007
 SEPOLIA_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com or any chainlink supported chain rpc url
 SEPOLIA_SERVICE_ADDRESS=0xc9f36411C9897e7F959D99ffca2a0Ba7ee0D7bDA
-SEPOLIA_CHAIN_ID=11155111 or any chainlink supported chain id
-PRICE_FEED_AGGREGATOR=0x17Dac87b07EAC97De4E182Fc51C925ebB7E723e2 or custom price feed aggregator address on chosen chain
-AGGREGATOR_PROXY=0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 or  custom aggregator proxy address on chosen chain
-ANSWER_UPDATED_EVENT=0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f
-FEED_READ_EVENT=0x211b0a6d1ea05edd12db159c3307872cdca106fc791b06a6baad5e124f39070e
+SEPOLIA_CHAIN_ID=11155111 or any Aave & Uniswap supported chain id
+AAVE_V3_POOL_ADDRESS=0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951 or Aave pool address on chosen chain
+AAVE_V3_POOL_PROVIDER_ADDRESS=0x012bAC54348C0E635dCAc9D5FB99f06F24136C9A or Aave pool provider address on chosen chain
+AAVE_V3_ORACLE_ADDRESS=0x2da88497588bf89281816106C7259e31AF45a663 or Aave orcale address on chosen chain
+WETH_ADDRESS=0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c or any WETH address on chosen chain
+USDC_ADDRESS=0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8 or any WETH address on chosen chain
 ```
 
 ### Deployment
 
 #### Testnet Deployment
 
-Deploy the feed reader to sepolia
+Deploy the Swapper to sepolia
 
 ```bash
-forge create --broadcast --rpc-url sepoliaRPC --private-key $PRIVATE_KEY src/FeedReader.sol:FeedReader --value 0.005ether --constructor-args 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 0xc9f36411C9897e7F959D99ffca2a0Ba7ee0D7bDA
+forge create --broadcast --rpc-url sepoliaRPC --private-key $PRIVATE_KEY src/Swapper.sol:Swapper
 ```
 
-Deploy the AGGReactive contract to lasna
+Deploy the Looper to sepolia
 
 ```bash
-forge create --broadcast --rpc-url lasnaRPC --private-key $PRIVATE_KEY src/AGGReactive.sol:AGGReactive --value 1ether --constructor-args feed_reader_address 0x17Dac87b07EAC97De4E182Fc51C925ebB7E723e2 0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f 11155111 0x0000000000000000000000000000000000fffFfF
+forge create --broadcast --rpc-url sepoliaRPC --private-key $PRIVATE_KEY src/Looper.sol:Looper --value 0.02ether --constructor-args 0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c 0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8 0x012bAC54348C0E635dCAc9D5FB99f06F24136C9A 0x2da88497588bf89281816106C7259e31AF45a663 swapper_address
 ```
 
-Deploy the feed proxy to lasna
+Deploy the TransferReactive contract to lasna
 
 ```bash
-forge create --broadcast --rpc-url lasnaRPC --private-key $PRIVATE_KEY src/FeedProxy.sol:FeedProxy --value 1ether --constructor-args 0x0000000000000000000000000000000000fffFfF
+forge create --broadcast --rpc-url lasnaRPC --private-key $PRIVATE_KEY src/TransferReactive.sol:TransferReactive --value 1.5ether --constructor-args looper_address 0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c
 ```
 
-Deploy the reactive proxy contract to lasna
+Deploy the SupplyReactive contract to lasna
 
 ```bash
-forge create --broadcast --rpc-url lasnaRPC --private-key $PRIVATE_KEY src/ReactiveProxy.sol:ReactiveProxy --value 1ether --constructor-args feed_proxy_address feed_reader_address  0x211b0a6d1ea05edd12db159c3307872cdca106fc791b06a6baad5e124f39070e 11155111 5318007 0x0000000000000000000000000000000000fffFfF
+forge create --broadcast --rpc-url lasnaRPC --private-key $PRIVATE_KEY src/SupplyReactive.sol:SupplyReactive --value 1ether --constructor-args looper_address 0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951
+```
+
+Deploy the BorrowReactive contract to lasna
+
+```bash
+forge create --broadcast --rpc-url lasnaRPC --private-key $PRIVATE_KEY src/BorrowReactive.sol:BorrowReactive --value 1ether --constructor-args looper_address 0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951
+```
+
+Deploy the SwapReactive contract to lasna
+
+```bash
+forge create --broadcast --rpc-url lasnaRPC --private-key $PRIVATE_KEY src/SwapReactive.sol:SwapReactive --value 1ether --constructor-args looper_address swapper_address
+```
+
+Opting in
+
+Obtaining WETH
+```bash
+cast send --rpc-url sepoliaRPC --private-key $PRIVATE_KEY 0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c --value amount_ether "deposit(uint256)" amount_ether
+```
+
+sending WETH to looper contract
+```bash
+cast send --rpc-url sepoliaRPC --private-key $PRIVATE_KEY 0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c "transfer(address,uint256)" looper_address amount
 ```
 
 ## 🧪 Testing
@@ -518,60 +545,94 @@ forge create --broadcast --rpc-url lasnaRPC --private-key $PRIVATE_KEY src/React
 
 ```bash
 # Run all tests
-forge test
+forge test -vv
 
-# Run with verbose output
-forge test -vvv
+# Run specific test contracts
+forge test --match-contract LooperTest -vv
+forge test --match-contract IntegrationTest -vv
 
-# Run specific test
-forge test --match-test test_ComparePriceFeedData -vvv
+# Run with gas reporting
+forge test --gas-report -vv
+
+# Run specific test functions
+forge test --match-test testFullLeverageLoop -vv
 ```
 
-## 📊 Usage Examples
+## Bounty Requirements
 
-### Reading Price Data
+- Slippage on swaps - This was handled by the Swapper contract using mininum amount out to 0 thus setting the maximum slipage.
 
 ```solidity
-import "./src/FeedProxy.sol";
+    function swapAsset(
+        address inToken,
+        address outToken,
+        uint256 amount
+    ) public returns (uint256 amountOut) {
+        /** @dev Transfer input tokens from caller to this contract */
+        TransferHelper.safeTransferFrom(inToken, msg.sender, address(this), amount);
+        
+        /** @dev Approve SwapRouter to spend input tokens */
+        TransferHelper.safeApprove(inToken, address(swapRouter), amount);
 
-contract PriceConsumer {
-    FeedProxy public priceFeed;
+        /** @dev Configure swap parameters for exact input single-hop swap */
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
+            .ExactInputSingleParams({
+                tokenIn: inToken,
+                tokenOut: outToken,
+                fee: poolFee,
+                recipient: msg.sender,
+                amountIn: amount,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            });
 
-    constructor(address _feedProxy) {
-        priceFeed = FeedProxy(_feedProxy);
+        /** @dev Execute the swap and get output amount */
+        amountOut = swapRouter.exactInputSingle(params);
+
+        emit swapEvent(outToken, msg.sender);
     }
+```
+- Borrow Cap - This was handled by the getting the maximum borrow amount and then borrowing only 35% of it, thus lowering the borrow cap.
 
-    function getLatestPrice() public view returns (int256) {
-        (,int256 price,,,) = priceFeed.latestRoundData();
-        return price;
-    }
+```solidity
+    function calculateSafeBorrowAmount()
+        public
+        view
+        returns (uint256 borrowAmount)
+    {
+        (, , uint256 availableBorrowsBase, , , ) = Pool.getUserAccountData(
+            address(this)
+        );
 
-    function getPriceDecimals() public view returns (uint8) {
-        return priceFeed.decimals();
+        if (availableBorrowsBase == 0) {
+            return 0;
+        }
+
+        /** @dev Apply safety factor to available borrows to prevent liquidation */
+        uint256 safeBorrowsBase = (availableBorrowsBase * SAFETY_FACTOR_PERCENT) / DENOMINATOR;
+
+        /** @dev Get current price of borrow token from oracle */
+        uint256 borrowTokenPriceBase = priceOracle.getAssetPrice(borrowToken);
+
+        // Ensure price is not zero before division
+        require(borrowTokenPriceBase > 0, "Price feed unavailable");
+
+        /** @dev Conversion factor to adjust for decimal differences between base currency and borrow token */
+        uint256 conversionFactor = 10 ** (BASE_CURRENCY_DECIMALS - BORROW_TOKEN_DECIMALS); // 100
+
+        /** @dev Convert base currency amount to token amount (8-decimal equivalent units) */
+        uint256 tokenAmount8Decimals = (safeBorrowsBase * 10 ** BASE_CURRENCY_DECIMALS) / borrowTokenPriceBase;
+
+        /** @dev Scale down from 8 decimals to borrow token decimals (e.g., USDC 6 decimals) */
+        borrowAmount = tokenAmount8Decimals / conversionFactor;
+
+        return borrowAmount;
     }
-}
 ```
 
-## 🛡️ Security Considerations
+## Future improvements
 
-### Access Control
-
-- All callback functions use `authorizedSenderOnly` modifier
-- Reactive VM validation with `rvmIdOnly` checks
-- Pausable subscriptions for emergency stops
-
-### Data Integrity
-
-- Tracking AnswerUpdated event for latest data and fee optimization
-- Comprehensive event validation
-- Timestamp verification for freshness
-- Round ID tracking to prevent replay attacks
-
-### Best Practices
-
-- Always verify price data freshness
-- Implement circuit breakers for extreme price movements
-- Use multiple price sources when possible
+We will be working on the safe unwind functionality as the future improvent to the project, this will aim to pay back all debts while returning the initial collateral to the user
 
 ## 🤝 Contributing
 
@@ -590,17 +651,9 @@ We welcome contributions! Please follow these steps:
 - Update documentation for API changes
 - Ensure all tests pass before submitting
 
-## 📄 License
+- **Documentation**: [Project README](https://github.com/NatX223/ReactiveLooper/blob/main/README.md/)
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/NatX223/ReactiveLooper?tab=GPL-3.0-1-ov-file#readme) file for details.
-
-## 🆘 Support
-
-- **Documentation**: [Project Wiki](https://github.com/NatX223/ReactiveLooper/wiki)
-- **Issues**: [GitHub Issues](https://github.com/NatX223/ReactiveLooper/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/NatX223/ReactiveLooper/discussions)
-
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Reactive Network](https://reactive.network/) for cross-chain infrastructure
 - [Aave](https://aave.com/docs/aave-v3/smart-contracts/pool) for the lending protocol
