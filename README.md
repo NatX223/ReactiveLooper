@@ -5,7 +5,7 @@ DeFi lending looper - leverage optimizer powered by Reactive network
 
 ## Live Link - 
 
-## Demo - 
+## Demo - https://www.loom.com/share/407ac34f351c4b08a5e7173f1ce75c8d
 
 ## Table of Contents
 
@@ -40,21 +40,39 @@ back contract.
 
 Below is an Imgae depicting the architecture of the ReactiveAggregator project.
 
-<!-- ```
                                     Reactive Network           
 ┌────────────────────────┐        ┌──────────────────┐         ┌─────────────────┐
-│  AggregatorV3 contracts│◄───────┤  AggReactive     │         │                 │
-│  (Price Source)        │        │  (Event Monitor) │         │                 │
+│  WETH Transfer Event   │◄───────┤  TransferReactive│         │                 │
+│  (User Opt-in)         │        │  (Event Monitor) │         │                 │
 └────────────────────────┘        └──────────────────┘         │                 │
          │                              │                      │                 │
-         │ AnswerUpdated                │ Callback             │                 │
+         │ Transfer                     │ Callback             │                 │
          ▼                              ▼                      │                 │
 ┌─────────────────┐            ┌──────────────────┐            │  ┌─────────────┐│
-│   FeedReader    │◄───────────┤ ReactiveProxy    │───────────►│  │ FeedProxy   ││
-│ (Data Extractor)│            │ (Cross-chain     │            │  │(Data Store) ││
-└─────────────────┘            │  Coordinator)    │            │  └─────────────┘│
-                               └──────────────────┘            └─────────────────┘
-``` -->
+│   Looper        │◄───────────┤ Supply Event     │───────────►│  │ Aave Pool   ││
+│ (Supply)        │            │ (SupplyReactive) │            │  │(Collateral) ││
+└─────────────────┘            └──────────────────┘            │  └─────────────┘│
+         │                              │                      └─────────────────┘
+         │ Supply Event                 │ Callback                      │
+         ▼                              ▼                               │
+┌─────────────────┐            ┌──────────────────┐                     │
+│   Looper        │◄───────────┤ Borrow Event     │                     │
+│ (Borrow)        │            │ (BorrowReactive) │                     │
+└─────────────────┘            └──────────────────┘                     │
+         │                              │                               │
+         │ Borrow Event                 │ Callback                      │
+         ▼                              ▼                               │
+┌─────────────────┐            ┌──────────────────┐                     │
+│   Swapper       │◄───────────┤ Swap Event       │                     │
+│ (USDC→WETH)     │            │ (SwapReactive)   │                     │
+└─────────────────┘            └──────────────────┘                     │
+         │                              │                               │
+         │ Swap Event                   │ Callback                      │
+         ▼                              ▼                               │
+┌─────────────────┐            ┌──────────────────┐                     │
+│   Looper        │◄───────────┤ Loop Back        │◄────────────────────┘
+│ (Re-supply)     │            │ (Callback)       │
+└─────────────────┘            └──────────────────┘
 
 ### Program Flow
 
@@ -394,25 +412,31 @@ Reacting
     }
 ```
 
-<!-- ### Contracts
+### Contracts
 
 | Contract                                      | Address                                      | Chain   |
 | --------------------------------------------- | -------------------------------------------- | ------- |
-| **Chainlink price feed aggregator - BTC/USD** | `0x17Dac87b07EAC97De4E182Fc51C925ebB7E723e2` | sepolia |
-| **AggReactive**                               | `0xa76c05CecE1D5d74ADA1e4746EE14df75603b422` | lasna   |
-| **FeedReader**                                | `0x7B7d298752718b7a8D0B22AfAF509900CaA61F23` | sepolia |
-| **ReactiveProxy**                             | `0xa2f2436C61b1C0B40685691280B846B3B032bF25` | lasna   |
-| **FeedProxy**                                 | `0xAc0723E5A9857A9a9b9503AfD0c0263B8f9bbFA1` | lasna   |
+| **Aave v3 Pool**                              | [0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951](https://sepolia.etherscan.io/address/0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951) | sepolia |
+| **Collateral Token (WETH)**                   | [0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c](https://sepolia.etherscan.io/address/0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c) | sepolia |
+| **Borrow Token (USDC)**                       | [0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8](https://sepolia.etherscan.io/address/0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8) | sepolia |
+| **Looper**                                    | [0x534028e697fbAF4D61854A27E6B6DBDc63Edde8c](https://sepolia.etherscan.io/address/0x534028e697fbAF4D61854A27E6B6DBDc63Edde8c) | sepolia |
+| **Swapper**                                   | [0x8D9E25C7b0439781c7755e01A924BbF532EDf24d](https://sepolia.etherscan.io/address/0x8D9E25C7b0439781c7755e01A924BbF532EDf24d) | sepolia |
+| **TransferReactive**                          | [0xA6b51C26dfe550dCBDcac2eb2931962612c508B9](https://lasna.reactscan.net/address/0x58e95d9300254fbba4a6b0b8abc5e94bf9dc4c52/contract/0xa6b51c26dfe550dcbdcac2eb2931962612c508b9) | lasna   |
+| **SupplyReactive**                            | [0xF2cD21975a70B9DA83e4f902Dd854B433d7F3B5E](https://lasna.reactscan.net/address/0x58e95d9300254fbba4a6b0b8abc5e94bf9dc4c52/contract/0xF2cD21975a70B9DA83e4f902Dd854B433d7F3B5E) | lasna   |
+| **BorrowReactive**                            | [0xf6D2E24127FE52b254bB34FaB4a934FfA305A3a7](https://lasna.reactscan.net/address/0x58e95d9300254fbba4a6b0b8abc5e94bf9dc4c52/contract/0xf6D2E24127FE52b254bB34FaB4a934FfA305A3a7) | lasna   |
+| **SwapReactive**                              | [0x548E710cEBD460FcD18189766F7826D5BDB554bb](https://lasna.reactscan.net/address/0x58e95d9300254fbba4a6b0b8abc5e94bf9dc4c52/contract/0x548E710cEBD460FcD18189766F7826D5BDB554bb) | lasna   |
 
 ### Transactions
 
 | Function                                                                            | Transaction hash                                                     | Chain   |
 | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------- |
-| **AnswerUpdated event**                                                             | `0xddf48c68caf2d227d7abf0c2a090676e1673ce07bd26b42b3454b81c2a61337b` | sepolia |
-| **Reacting to AnswerUpdated event**                                                 | `0x970d916e094bc639f86b8d83e5452a2ecc226c1d933373e4cb0dce3a201f1b0a` | lasna   |
-| **Callback - reading price feed data from aggregators and emitting feedRead event** | `0xe269cb549c4866b48786684233b09525fc8a865ac1a9a574e7ea036fe131813a` | sepolia |
-| **Reacting to feedRead event and calling callback event for FeedProxy callback**    | `0xecef8c6e8d63d4cf26d979a86dec912ad997f719f28be5af2eac3d40e88fc219` | lasna   |
-| **Callback - storing price feed data**                                              | `0x3cd85113cacae806796f2b1fb446784f09f46d179cf9e2e0775e3fc9c4bb482e` | lasna   |
+| **User Opt-in**                  | [0xd3c22173e519704a49392b45ff2e23afa666a788194b3b0bdc98030416d1f898](https://sepolia.etherscan.io/tx/0xd3c22173e519704a49392b45ff2e23afa666a788194b3b0bdc98030416d1f898) | sepolia |
+| **Reacting to Transfer event**   | [0xb83c64620b5b535c09883123b594206457e2ed1b209dede9396f91331e01d9a7](https://lasna.reactscan.net/address/0x58e95d9300254fbba4a6b0b8abc5e94bf9dc4c52/4112) | lasna   |
+| **Callback - Supply Collateral** | [0xdac83b780d302ef780569fa664f286f16875875b8db02dfaf9c69a8701c8f0c0](https://sepolia.etherscan.io/tx/0xdac83b780d302ef780569fa664f286f16875875b8db02dfaf9c69a8701c8f0c0) | sepolia |
+| **Reacting to Supply event**     | [0x3f19641b3f4f625c24bb7db3c444b6c5f96c25a5af78da9f37d555aa89aa0232](https://lasna.reactscan.net/address/0x58e95d9300254fbba4a6b0b8abc5e94bf9dc4c52/4116) | lasna   |
+| **Callback - Borrow USDC**       | [0x0177077a97289f8df3bad84fbb20cb85d331c55f78392bb8fb395c1264ba38a5](https://sepolia.etherscan.io/tx/0x0177077a97289f8df3bad84fbb20cb85d331c55f78392bb8fb395c1264ba38a5) | sepolia   |
+| **Reacting to Borrow event**     | [0x8173fcf3451bfa1f4c44a995a25f293c523ae056597624166ae03a643baceaf5](https://lasna.reactscan.net/address/0x58e95d9300254fbba4a6b0b8abc5e94bf9dc4c52/4120) | lasna   |
+| **Callback - Swapping tokens**   | [0x1cbfa8faea94eb5fe259376b8210d3e4c5e93b00bc96809b593782592fc3ec07](https://sepolia.etherscan.io/tx/0x1cbfa8faea94eb5fe259376b8210d3e4c5e93b00bc96809b593782592fc3ec07) | sepolia   |
 
 ## Setup and Deployment
 
@@ -585,4 +609,4 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
 
 ---
 
-**Built with Reactive** -->
+**Built with Reactive**
