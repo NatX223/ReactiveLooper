@@ -39,8 +39,7 @@ back contract.
 ### Architecture
 
 Below is an Imgae depicting the architecture of the ReactiveAggregator project.
-
-                                    Reactive Network           
+           
 ┌────────────────────────┐        ┌──────────────────┐         ┌─────────────────┐
 │  WETH Transfer Event   │◄───────┤  TransferReactive│         │                 │
 │  (User Opt-in)         │        │  (Event Monitor) │         │                 │
