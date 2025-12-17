@@ -83,10 +83,8 @@ contract Swapper {
         address tokenOut,
         uint256 amountIn
     ) public view returns (uint256 amount) {
-        /** @dev Time window for price consultation (2 seconds ago) */
         uint32 secondsAgo = 2;
         
-        /** @dev Get the pool address for the token pair */
         address _pool = IUniswapV3Factory(factoryAdd).getPool(
             tokenIn,
             tokenOut,
