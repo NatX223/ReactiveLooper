@@ -3,7 +3,7 @@ DeFi lending looper - leverage optimizer powered by Reactive network
 
 ---
 
-## Live Link - https://reactive-looper-72o3qd61q-natxs-projects.vercel.app/
+## Live Link - reactive-looper-app.vercel.app
 
 ## Demo - https://www.loom.com/share/407ac34f351c4b08a5e7173f1ce75c8d
 
